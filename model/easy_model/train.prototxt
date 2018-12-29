@@ -1,0 +1,197 @@
+name: "test_net"
+layer{
+  name: "cifar"
+  type: "Data"
+  top: "data"
+  top: "label"
+  include{
+  	phase: TRAIN
+  }
+  transform_param{
+  	crop_size: 32
+	scale: 0.00392156
+  }
+  data_param{
+  	source: "../../data/train"
+	batch_size: 100
+	backend: LMDB
+  }
+}
+layer{
+  name: "cifar"
+  type: "Data"
+  top: "data"
+  top: "label"
+  include{
+  	phase: TEST
+  }
+  transform_param{
+  	crop_size: 32
+	scale: 0.00392156
+  }
+  data_param{
+  	source: "../../data/test"
+	batch_size: 100
+	backend: LMDB
+  }
+}
+layer{
+  name: "conv0"
+  type: "Convolution"
+  bottom: "data"
+  top: "conv0"
+  convolution_param{
+  	num_output: 32
+	kernel_size: 3
+	stride: 1
+	bias_term: true
+	pad: 1
+	dilation: 1
+	weight_filler{
+	  type:"msra"
+	}
+	bias_filler{
+	  type: "constant"
+	  value: 0
+	}	
+  }
+  
+}
+layer {
+  name: "conv0/relu"
+  type: "ReLU"
+  bottom: "conv0"
+  top: "conv0"
+}
+layer {
+  name: "pool0"
+  type: "Pooling"
+  bottom: "conv0"
+  top: "pool0"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer{
+  name: "conv1"
+  type: "Convolution"
+  bottom: "pool0"
+  top: "conv1"
+  convolution_param{
+  	num_output: 64
+	kernel_size: 3
+	stride: 1
+	bias_term: true
+	pad: 1
+	dilation: 1
+	weight_filler{
+	  type:"msra"
+	}
+	bias_filler{
+	  type: "constant"
+	  value: 0
+	}	
+  }
+  
+}
+layer {
+  name: "conv1/relu"
+  type: "ReLU"
+  bottom: "conv1"
+  top: "conv1"
+}
+layer {
+  name: "pool1"
+  type: "Pooling"
+  bottom: "conv1"
+  top: "pool1"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer{
+  name: "conv2"
+  type: "Convolution"
+  bottom: "pool1"
+  top: "conv2"
+  convolution_param{
+  	num_output: 32
+	kernel_size: 3
+	stride: 1
+	bias_term: true
+	pad: 1
+	dilation: 1
+	weight_filler{
+	  type:"msra"
+	}
+	bias_filler{
+	  type: "constant"
+	  value: 0
+	}	
+  }
+  
+}
+layer {
+  name: "conv2/relu"
+  type: "ReLU"
+  bottom: "conv2"
+  top: "conv2"
+}
+layer {
+  name: "pool2"
+  type: "Pooling"
+  bottom: "conv2"
+  top: "pool2"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  name: "fc"
+  type: "InnerProduct"
+  bottom: "pool2"
+  top: "fc"
+  param {
+    lr_mult: 1
+  }
+  param {
+    lr_mult: 2
+  }
+  inner_product_param {
+    num_output: 10
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layer{
+  name: "loss"
+  type: "SoftmaxWithLoss"
+  bottom: "fc"
+  bottom: "label"
+  top: "loss"
+}
+layer {
+  name: "softmax"
+  type: "Softmax"
+  bottom: "fc"
+  top: "softmax"
+}
+layer{
+  name: "accuracy"
+  type: "Accuracy"
+  bottom: "softmax"
+  bottom: "label"
+  top: "Accuracy"
+}
+
